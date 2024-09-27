@@ -1,4 +1,4 @@
-# Twitter Scraper
+# Will Chen's Twitter Scraper
 
 A simple command-line tool to fetch and process tweets.
 
@@ -12,7 +12,7 @@ A simple command-line tool to fetch and process tweets.
 ## Installation
 
 ```sh
-$ pip install twitter-scraper
+$ pip install wc-scrape
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ $ pip install twitter-scraper
 First, set up your Twitter Bearer Token:
 
 ```sh
-$ twitter-scraper setup
+$ wc-scrape setup
 ```
 
 ### Fetching Tweets
@@ -28,7 +28,7 @@ $ twitter-scraper setup
 Fetch the latest tweets from a user:
 
 ```sh
-$ twitter-scraper fetch-tweets <username> <count>
+$ wc-scrape fetch-tweets <username> <count>
 ```
 
 This will save the tweets to a JSON file.
@@ -36,5 +36,5 @@ This will save the tweets to a JSON file.
 To generate a text file output, use the `--to-txt` flag when fetching tweets:
 
 ```sh
-$ twitter-scraper fetch-tweets <username> <count> --to-txt
+$ wc-scrape fetch-tweets <username> <count> --to-txt
 ```
