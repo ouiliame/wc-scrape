@@ -11,9 +11,19 @@ A simple command-line tool to fetch and process tweets.
 
 ## Installation
 
+Install from PyPI:
+
 ```sh
 $ pip install wc-scrape
 ```
+
+or
+
+```sh
+$ pip3 install wc-scrape
+```
+
+(you may need to use `sudo` or `--break-system-packages` on some systems)
 
 ## Usage
 
