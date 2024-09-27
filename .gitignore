@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Project-specific
+*.log
+*.json
+*.txt
+
+# Tweepy cache
+tweepy_cache/
+
+# Config files
+config.json
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
