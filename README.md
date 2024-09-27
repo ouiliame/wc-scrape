@@ -8,6 +8,7 @@ A simple command-line tool to fetch and process tweets.
 - Save tweets to JSON
 - Convert JSON tweets to a readable text format
 - Retrieve a specific tweet by ID
+- Retry on rate limit with 15-minute backoff
 
 ## Installation
 
@@ -47,4 +48,10 @@ To generate a text file output, use the `--to-txt` flag when fetching tweets:
 
 ```sh
 $ wc-scrape fetch-tweets <username> <count> --to-txt
+```
+
+To retry on rate limit with a 15-minute backoff, use the `--retry` flag:
+
+```sh
+$ wc-scrape fetch-tweets <username> <count> --retry
 ```

@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from typing import List, Dict
 from pathlib import Path
 
@@ -52,7 +53,7 @@ def get_user_id(username: str) -> int:
     raise ValueError(f"User {username} not found")
 
 
-def get_latest_tweets(user_id: int, count: int) -> List[Dict]:
+def get_latest_tweets(user_id: int, count: int, retry: bool = False) -> List[Dict]:
     if not CLIENT:
         init_client()
     tweets = []
@@ -71,16 +72,29 @@ def get_latest_tweets(user_id: int, count: int) -> List[Dict]:
         "in_reply_to_user_id",
     ]
 
-    for tweet in tweepy.Paginator(
-        CLIENT.get_users_tweets,
-        user_id,
-        max_results=100,
-        tweet_fields=tweet_fields,
-        expansions=expansions,
-    ).flatten(limit=count):
-        tweets.append(tweet.data)
-        logging.info(f"Tweet saved: {tweet.data['id']}")
-    return tweets
+    try:
+        for tweet in tweepy.Paginator(
+            CLIENT.get_users_tweets,
+            user_id,
+            max_results=100,
+            tweet_fields=tweet_fields,
+            expansions=expansions,
+        ).flatten(limit=count):
+            tweets.append(tweet.data)
+            logging.info(f"Tweet saved: {tweet.data['id']}")
+    except tweepy.TooManyRequests:
+        if retry:
+            logging.warning("Rate limit reached. Retrying after 15 minutes.")
+            time.sleep(900)  # Wait for 15 minutes
+            return get_latest_tweets(user_id, count, retry)
+        else:
+            logging.warning("Rate limit reached. Stopping.")
+    except tweepy.TwitterServerError:
+        logging.error("Twitter server error. Stopping.")
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+    finally:
+        return tweets
 
 
 def save_tweets_to_json(tweets: List[Dict], filename: str):
@@ -143,11 +157,15 @@ def setup(token):
 @click.argument("count", type=int)
 @click.option("--output", default="{username}_max_tweets.json", help="Output JSON file")
 @click.option("--to-txt", is_flag=True, help="Convert tweets to text file")
-def fetch_tweets(username: str, count: int, output: str, to_txt: bool):
+@click.option(
+    "--retry", is_flag=True, help="Retry on rate limit with 15-minute backoff"
+)
+def fetch_tweets(username: str, count: int, output: str, to_txt: bool, retry: bool):
     """Fetch tweets for a given username."""
+    latest_tweets = []
     try:
         user_id = get_user_id(username)
-        latest_tweets = get_latest_tweets(user_id, count)
+        latest_tweets = get_latest_tweets(user_id, count, retry)
         output_file = output.format(username=username)
         save_tweets_to_json(latest_tweets, output_file)
         click.echo(
@@ -160,6 +178,11 @@ def fetch_tweets(username: str, count: int, output: str, to_txt: bool):
             click.echo(f"Converted tweets to text file: {Path(txt_output).resolve()}")
     except Exception as e:
         click.echo(f"An error occurred: {str(e)}", err=True)
+    finally:
+        if latest_tweets:
+            temp_file = f"{username}_temp_tweets.json"
+            save_tweets_to_json(latest_tweets, temp_file)
+            click.echo(f"Saved progress to temporary file: {Path(temp_file).resolve()}")
 
 
 @cli.command()
